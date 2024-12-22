@@ -5,6 +5,9 @@
 ## Description
 **Simple Count** is a WordPress plugin that tracks visitor origins by country and displays a pie chart on the WordPress dashboard. It uses a custom database table to store visitor data and provides an intuitive interface for monitoring visits over various date ranges.
 
+## Example
+![Example](https://github.com/user-attachments/assets/ad16b114-6514-41e8-a0ba-c3bca5860f9c)
+
 ## Features
 - Tracks visitor origins using the Cloudflare geolocation header.
 - Filters out bots and scrapers based on user-agent keywords.
@@ -32,7 +35,7 @@
 The plugin uses a list of predefined bot keywords to prevent logging visits from bots and scrapers.
 
 ## Dashboard Widget
-A doughnut chart, built with Chart.js, summarizes the top countries by visitor count. Additional countries are grouped into an "Other" category for better visualization.
+A pie chart, built with Chart.js, summarizes the top countries by visitor count. Additional countries are grouped into an "Other" category for better visualization.
 
 ## Uninstallation
 Upon uninstallation, the plugin removes the custom database table to ensure a clean slate.
@@ -46,4 +49,6 @@ If you encounter any issues or bugs, you're on your own. I wrote this for myself
 
 ## Disclaimer
 This software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement. By using this plugin, you agree to use it at your own risk. The author is not responsible for any damages, data loss, or other issues caused by the use of this plugin.
+
+
 
