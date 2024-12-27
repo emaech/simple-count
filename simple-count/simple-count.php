@@ -2,7 +2,7 @@
 /*
 Plugin Name: Simple Count
 Description: Adds a dashboard widget displaying a pie chart of visitor origins by country and captures visitor data.
-Version: 1.2
+Version: 1.3
 Author: emaech
 */
 
@@ -103,29 +103,50 @@ function simple_count_display_widget() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'simple_count';
 
-    // Default to today if no date range is selected
+    // Default to last 7 days if no date range is selected
     $date_filter = isset($_GET['date_filter']) ? sanitize_text_field($_GET['date_filter']) : 'last_7_days';
 
     // Adjust SQL query based on date filter
     $date_condition = '';
-    switch ($date_filter) {
-        case 'yesterday':
-            $date_condition = "WHERE visit_time >= CURDATE() - INTERVAL 1 DAY AND visit_time < CURDATE()";
-            break;
-        case 'last_7_days':
-            $date_condition = "WHERE visit_time >= CURDATE() - INTERVAL 7 DAY";
-            break;
-        case 'last_30_days':
-            $date_condition = "WHERE visit_time >= CURDATE() - INTERVAL 30 DAY";
-            break;
-        case 'last_90_days':
-            $date_condition = "WHERE visit_time >= CURDATE() - INTERVAL 90 DAY";
-            break;
-        case 'today':
-        default:
-            $date_condition = "WHERE visit_time >= CURDATE()";
-            break;
-    }
+	
+	// Get WordPress timezone
+	$timezone = new DateTimeZone(wp_timezone_string());
+
+	// Get the current date and time in WordPress timezone
+	$current_time = new DateTime('now', $timezone);
+
+	// Define the date conditions for each filter
+	$date_conditions = [
+		'yesterday' => sprintf(
+			"WHERE visit_time >= '%s' AND visit_time < '%s'",
+			(clone $current_time)->modify('-1 day')->format('Y-m-d 00:00:00'),
+			(clone $current_time)->format('Y-m-d 00:00:00')
+		),
+		'last_7_days' => sprintf(
+			"WHERE visit_time >= '%s'",
+			(clone $current_time)->modify('-6 days')->format('Y-m-d 00:00:00') // Include today
+		),
+		'last_30_days' => sprintf(
+			"WHERE visit_time >= '%s'",
+			(clone $current_time)->modify('-30 days')->format('Y-m-d 00:00:00') // Include today
+		),
+		'last_60_days' => sprintf(
+			"WHERE visit_time >= '%s'",
+			(clone $current_time)->modify('-60 days')->format('Y-m-d 00:00:00') // Adjust range
+		),
+			'last_90_days' => sprintf(
+			"WHERE visit_time >= '%s'",
+			(clone $current_time)->modify('-90 days')->format('Y-m-d 00:00:00') // Adjust range
+		),
+		'today' => sprintf(
+			"WHERE visit_time >= '%s'",
+			(clone $current_time)->format('Y-m-d 00:00:00')
+		),
+	];
+
+	// Use the selected filter or default to 'today'
+	$date_condition = $date_conditions[$date_filter] ?? $date_conditions['today'];
+
 
     // Fetch visitor data based on date range
     $results = $wpdb->get_results("SELECT country, COUNT(*) as count FROM $table_name $date_condition GROUP BY country ORDER BY count DESC, country ASC LIMIT 5", ARRAY_A);
