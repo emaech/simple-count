@@ -2,7 +2,7 @@
 /*
 Plugin Name: Simple Count
 Description: Adds a dashboard widget displaying a pie chart of visitor origins by country and captures visitor data.
-Version: 1.4
+Version: 1.5
 Author: emaech
 */
 
@@ -105,8 +105,18 @@ function simple_count_capture_data() {
         return; // If the fingerprint already exists, don't track this visitor again
     }
 
+
+	// Get WordPress timezone
+	$timezone = new DateTimeZone(wp_timezone_string());
+
+	// Get the current date and time in WordPress timezone
+	$current_time = new DateTime('now', $timezone);
+
+	// Format for MySQL DateTime
+	$mysql_datetime = $current_time->format('Y-m-d H:i:s');
+
     // Insert the data into the database
-    $wpdb->insert($table_name, ['country' => $country, 'fingerprint' => $fingerprint]);
+    $wpdb->insert($table_name, ['country' => $country, 'fingerprint' => $fingerprint, 'visit_time' => $mysql_datetime]);
 	
 }
 
@@ -178,6 +188,8 @@ function simple_count_display_widget() {
 	// Get the current date and time in WordPress timezone
 	$current_time = new DateTime('now', $timezone);
 
+
+
 	// Define the date conditions for each filter
 	$date_conditions = [
 		'yesterday' => sprintf(
@@ -201,10 +213,8 @@ function simple_count_display_widget() {
 			"WHERE visit_time >= '%s'",
 			(clone $current_time)->modify('-90 days')->format('Y-m-d 00:00:00') // -90 Days
 		),
-			'all_time' => sprintf(
-			"", // No clause needed for range
-		),
-		'today' => sprintf(
+			'all_time' => "", // No clause needed for range
+			'today' => sprintf(
 			"WHERE visit_time >= '%s'",
 			(clone $current_time)->format('Y-m-d 00:00:00')
 		),
